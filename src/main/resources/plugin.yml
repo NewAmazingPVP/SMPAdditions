@@ -1,0 +1,4 @@
+name: Additions
+version: '${project.version}'
+main: mc.smpadditions.Additions
+api-version: 1.18
