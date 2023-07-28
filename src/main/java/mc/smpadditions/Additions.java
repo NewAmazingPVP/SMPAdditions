@@ -10,6 +10,7 @@ import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
 
 public class Additions extends JavaPlugin implements Listener {
 
@@ -17,6 +18,15 @@ public class Additions extends JavaPlugin implements Listener {
     public void onEnable() {
         getServer().getPluginManager().registerEvents(this, this);
         registerCustomRecipes();
+
+        int repeatDelayTicks = 7200 * 20;
+        BukkitRunnable broadcastTask = new BukkitRunnable() {
+            @Override
+            public void run() {
+                broadcastServerMessage();
+            }
+        };
+        broadcastTask.runTaskTimer(this, 0, repeatDelayTicks);
     }
 
     private void registerCustomRecipes() {
@@ -52,4 +62,16 @@ public class Additions extends JavaPlugin implements Listener {
         }
     }
 
+    private void broadcastServerMessage() {
+        String discordLink = "https://discord.gg/PN8egFY3ap";
+        String planetMinecraftLink = "https://www.planetminecraft.com/server/nappixel-lifesteal-smp-server-new-season-starts-today/vote/";
+        String minecraftServersLink = "https://minecraftservers.org/vote/653407";
+
+        String message = ChatColor.GREEN + "Make sure you have joined the Discord server and voted for outreach to more players!\n";
+        message += ChatColor.BLUE + "Discord: " + ChatColor.YELLOW + discordLink + "\n";
+        message += ChatColor.BLUE + "Planet Minecraft: " + ChatColor.YELLOW + planetMinecraftLink + "\n";
+        message += ChatColor.BLUE + "Minecraft Servers: " + ChatColor.YELLOW + minecraftServersLink;
+
+        Bukkit.broadcastMessage(message);
+    }
 }
