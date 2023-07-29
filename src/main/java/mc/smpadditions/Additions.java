@@ -2,17 +2,20 @@ package mc.smpadditions;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
-
 public class Additions extends JavaPlugin implements Listener {
+    private final int spawnRadius = 60;
 
     @Override
     public void onEnable() {
@@ -60,6 +63,27 @@ public class Additions extends JavaPlugin implements Listener {
             event.getWhoClicked().sendMessage(ChatColor.RED + "Crafting of End Crystals is not allowed!");
             event.getView().getPlayer().closeInventory();
         }
+    }
+
+    @EventHandler
+    public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
+        if (event.getEntity() instanceof Player) {
+            Player damaged = (Player) event.getEntity();
+
+            if (event.getDamager() instanceof Player) {
+                Player damager = (Player) event.getDamager();
+
+                if (isWithinSpawnRadius(damaged.getLocation())) {
+                    event.setCancelled(true);
+                    damager.sendMessage(ChatColor.RED + "You cannot damage players within the spawn protection area!");
+                }
+            }
+        }
+    }
+
+    private boolean isWithinSpawnRadius(Location location) {
+        Location spawnLocation = location.getWorld().getSpawnLocation();
+        return location.distanceSquared(spawnLocation) <= spawnRadius * spawnRadius;
     }
 
     private void broadcastServerMessage() {
