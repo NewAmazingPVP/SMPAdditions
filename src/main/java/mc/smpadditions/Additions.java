@@ -5,6 +5,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -12,13 +13,41 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ShapedRecipe;
+import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
+import com.github.sirblobman.combatlogx.api.ICombatLogX;
+import com.github.sirblobman.combatlogx.api.manager.IDeathManager;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
+
+import java.util.Calendar;
+import java.util.TimeZone;
+
 public class Additions extends JavaPlugin implements Listener {
     private final int spawnRadius = 60;
+    public static Additions additions;
+
+    private final long[] warningTimes = {10, 7, 5, 3, 2, 1, 30};
+    private final String[] warningMessages = {
+            "Server will restart in 10 minutes!",
+            "Server will restart in 7 minutes!",
+            "Server will restart in 5 minutes!",
+            "Server will restart in 3 minutes!",
+            "Server will restart in 2 minutes!",
+            "Server will restart in 1 minute!",
+            "Server will restart in 30 seconds!"
+    };
 
     @Override
     public void onEnable() {
+        additions = this;
         getServer().getPluginManager().registerEvents(this, this);
         registerCustomRecipes();
 
@@ -30,6 +59,7 @@ public class Additions extends JavaPlugin implements Listener {
             }
         };
         broadcastTask.runTaskTimer(this, 0, repeatDelayTicks);
+        scheduleRestart();
     }
 
     private void registerCustomRecipes() {
@@ -98,4 +128,69 @@ public class Additions extends JavaPlugin implements Listener {
 
         Bukkit.broadcastMessage(message);
     }
+
+    public ICombatLogX getAPI() {
+        PluginManager pluginManager = Bukkit.getPluginManager();
+        Plugin plugin = pluginManager.getPlugin("CombatLogX");
+        return (ICombatLogX) plugin;
+    }
+
+    @EventHandler
+    public void onDeath(PlayerDeathEvent e) {
+        Player player = e.getEntity();
+        ICombatLogX plugin = getAPI();
+        IDeathManager deathManager = plugin.getDeathManager();
+
+        if(deathManager.wasPunishKilled(player)) {
+            double amount = player.getMaxHealth();
+            player.setMaxHealth(amount - 2);
+            double addAmount = player.getKiller().getMaxHealth();
+            player.getKiller().setMaxHealth(addAmount + 2);
+        }
+    }
+
+    private void scheduleRestart() {
+        Calendar now = Calendar.getInstance(TimeZone.getTimeZone("America/New_York"));
+        Calendar restartTime = Calendar.getInstance(TimeZone.getTimeZone("America/New_York"));
+        restartTime.set(Calendar.HOUR_OF_DAY, 3);
+        restartTime.set(Calendar.MINUTE, 0);
+        restartTime.set(Calendar.SECOND, 0);
+
+        if (now.after(restartTime)) {
+            restartTime.add(Calendar.DAY_OF_MONTH, 1);
+        }
+
+        long initialDelay = restartTime.getTimeInMillis() - now.getTimeInMillis();
+
+        for (int i = 0; i < warningTimes.length; i++) {
+            long warningDelay = initialDelay - (warningTimes[i] * 60 * 1000);
+            scheduleWarning(warningDelay, warningMessages[i]);
+        }
+
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                restartServer();
+            }
+        }.runTaskLater(this, initialDelay / 50L);
+    }
+
+    private void scheduleWarning(long delay, String message) {
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                broadcastWarning(message);
+            }
+        }.runTaskLater(this, delay / 50L);
+    }
+
+    private void broadcastWarning(String message) {
+        getServer().broadcastMessage(ChatColor.RED + message);
+    }
+
+    private void restartServer() {
+        getServer().broadcastMessage(ChatColor.AQUA + "Restarting the server...");
+        getServer().spigot().restart();
+    }
+
 }
