@@ -6,6 +6,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -28,13 +29,14 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 
 import java.util.Calendar;
+import java.util.List;
 import java.util.TimeZone;
 
 public class Additions extends JavaPlugin implements Listener {
     private final int spawnRadius = 60;
     public static Additions additions;
 
-    private final long[] warningTimes = {10, 7, 5, 3, 2, 1, 30};
+    private final long[] warningTimes = {10, 7, 5, 3, 2, 1};
     private final String[] warningMessages = {
             "Server will restart in 10 minutes!",
             "Server will restart in 7 minutes!",
@@ -42,7 +44,6 @@ public class Additions extends JavaPlugin implements Listener {
             "Server will restart in 3 minutes!",
             "Server will restart in 2 minutes!",
             "Server will restart in 1 minute!",
-            "Server will restart in 30 seconds!"
     };
 
     @Override
@@ -144,8 +145,20 @@ public class Additions extends JavaPlugin implements Listener {
         if(deathManager.wasPunishKilled(player)) {
             double amount = player.getMaxHealth();
             player.setMaxHealth(amount - 2);
-            double addAmount = player.getKiller().getMaxHealth();
-            player.getKiller().setMaxHealth(addAmount + 2);
+            List<Entity> trackedEnemies = deathManager.getTrackedEnemies(player);
+            for(Entity p : trackedEnemies){
+                if(p instanceof Player){
+                    Player pl = (Player) p;
+                    double addAmount = pl.getMaxHealth();
+                    if(addAmount <= 18){
+                        pl.setMaxHealth(addAmount + 2);
+                    } else {
+                        getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), "lsgive heart_item 1 " + pl.getName());
+                        pl.sendMessage(ChatColor.DARK_GREEN + "You were given a heart item because you have max health");
+                    }
+                }
+            }
+
         }
     }
 
