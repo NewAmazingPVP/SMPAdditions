@@ -122,10 +122,10 @@ public class Additions extends JavaPlugin implements Listener {
         String planetMinecraftLink = "https://www.planetminecraft.com/server/nappixel-lifesteal-smp-server-new-season-starts-today/vote/";
         String minecraftServersLink = "https://minecraftservers.org/vote/653407";
 
-        String message = ChatColor.GREEN + "Make sure you have joined the Discord server and voted for outreach to more players!\n";
-        message += ChatColor.BLUE + "Discord: " + ChatColor.YELLOW + discordLink + "\n";
-        message += ChatColor.BLUE + "Planet Minecraft: " + ChatColor.YELLOW + planetMinecraftLink + "\n";
-        message += ChatColor.BLUE + "Minecraft Servers: " + ChatColor.YELLOW + minecraftServersLink;
+        String message = ChatColor.GOLD + "Make sure you have joined the Discord server and voted for outreach to more players!\n";
+        message += ChatColor.BLUE + "Discord: " + ChatColor.AQUA + "/discord or" + discordLink + "\n";
+        message += ChatColor.BLUE + "Planet Minecraft: " + ChatColor.AQUA + planetMinecraftLink + "\n";
+        message += ChatColor.BLUE + "Minecraft Servers: " + ChatColor.AQUA + minecraftServersLink;
 
         Bukkit.broadcastMessage(message);
     }
