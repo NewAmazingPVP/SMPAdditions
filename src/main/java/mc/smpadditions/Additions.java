@@ -12,6 +12,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.inventory.CraftItemEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.plugin.Plugin;
@@ -28,13 +29,21 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 
-import java.util.Calendar;
-import java.util.List;
-import java.util.TimeZone;
+import java.util.*;
 
 public class Additions extends JavaPlugin implements Listener {
     private final int spawnRadius = 60;
     public static Additions additions;
+    public static final List<String> groupNames = Arrays.asList(
+            "Supporter", "Build_Team", "Build_Team+", "Premium", "Mojang",
+            "Helper", "PIG+++", "Events", "Mcp", "Youtube", "NAP",
+            "Ender", "Furious", "ASH", "Vip", "Vip+", "Mvp", "Mvp+",
+            "Mvp++", "GameMaster", "Female", "Male", "Non-Binary",
+            "Eboy", "Egirl", "Sexy", "Pro", "Ace", "Sweaty",
+            "Unbeatable", "simp", "Europe", "Blood", "Test",
+            "2P6ldu1teo45", "Niko", "Regar", "Duck"
+    );
+
 
     private final long[] warningTimes = {10, 7, 5, 3, 2, 1};
     private final String[] warningMessages = {
@@ -61,6 +70,24 @@ public class Additions extends JavaPlugin implements Listener {
         };
         broadcastTask.runTaskTimer(this, 0, repeatDelayTicks);
         scheduleRestart();
+    }
+
+    @EventHandler
+    public void onPlayerJoin(PlayerJoinEvent event) {
+        if(!event.getPlayer().hasPlayedBefore()){
+            getServer().dispatchCommand(getServer().getConsoleSender(), "ep user " + event.getPlayer().getName() + " setgroup " + randomGroup());
+        }
+    }
+
+    public static String randomGroup() {
+        if (groupNames.isEmpty()) {
+            return null;
+        }
+
+        Random random = new Random();
+        int randomIndex = random.nextInt(groupNames.size());
+
+        return groupNames.get(randomIndex);
     }
 
     private void registerCustomRecipes() {
@@ -123,12 +150,17 @@ public class Additions extends JavaPlugin implements Listener {
         String minecraftServersLink = "https://minecraftservers.org/vote/653407";
 
         String message = ChatColor.GOLD + "Make sure you have joined the Discord server and voted for outreach to more players!\n";
-        message += ChatColor.BLUE + "Discord: " + ChatColor.AQUA + "/discord or" + discordLink + "\n";
-        message += ChatColor.BLUE + "Planet Minecraft: " + ChatColor.AQUA + planetMinecraftLink + "\n";
-        message += ChatColor.BLUE + "Minecraft Servers: " + ChatColor.AQUA + minecraftServersLink;
+        message += ChatColor.BLUE + "Discord: " + ChatColor.AQUA + "/discord or " + createClickableLink("Click here", discordLink) + "\n";
+        message += ChatColor.BLUE + "Planet Minecraft: " + ChatColor.AQUA + createClickableLink("Click here", planetMinecraftLink) + "\n";
+        message += ChatColor.BLUE + "Minecraft Servers: " + ChatColor.AQUA + createClickableLink("Click here", minecraftServersLink);
 
         Bukkit.broadcastMessage(message);
     }
+
+    private String createClickableLink(String text, String link) {
+        return "[{\"text\":\"" + text + "\",\"clickEvent\":{\"action\":\"open_url\",\"value\":\"" + link + "\"}}]";
+    }
+
 
     public ICombatLogX getAPI() {
         PluginManager pluginManager = Bukkit.getPluginManager();
