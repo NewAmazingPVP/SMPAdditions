@@ -1,5 +1,7 @@
 package mc.smpadditions;
 
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -117,9 +119,9 @@ public class Additions extends JavaPlugin implements Listener {
     @EventHandler
     public void onCraftItem(CraftItemEvent event) {
         if (event.getCurrentItem() != null && event.getCurrentItem().getType() == Material.END_CRYSTAL) {
-            event.setCancelled(true);
-            event.getWhoClicked().sendMessage(ChatColor.RED + "Crafting of End Crystals is not allowed!");
-            event.getView().getPlayer().closeInventory();
+            event.getWhoClicked().sendMessage(ChatColor.RED + "You can only use crystals to respawn dragon and not for PVP!");
+            Player player = (Player) event.getView().getPlayer();
+            player.sendTitle(ChatColor.RED + "WARNING!", "You can only use crystals to respawn dragon and not for PVP!");
         }
     }
 
@@ -149,18 +151,39 @@ public class Additions extends JavaPlugin implements Listener {
         String planetMinecraftLink = "https://www.planetminecraft.com/server/nappixel-lifesteal-smp-server-new-season-starts-today/vote/";
         String minecraftServersLink = "https://minecraftservers.org/vote/653407";
 
-        String message = ChatColor.GOLD + "Make sure you have joined the Discord server and voted for outreach to more players!\n";
-        message += ChatColor.BLUE + "Discord: " + ChatColor.AQUA + "/discord or " + createClickableLink("Click here", discordLink) + "\n";
-        message += ChatColor.BLUE + "Planet Minecraft: " + ChatColor.AQUA + createClickableLink("Click here", planetMinecraftLink) + "\n";
-        message += ChatColor.BLUE + "Minecraft Servers: " + ChatColor.AQUA + createClickableLink("Click here", minecraftServersLink);
+        TextComponent message = new TextComponent(ChatColor.GOLD + "Make sure you have joined the Discord server and voted for outreach to more players!\n");
 
-        Bukkit.broadcastMessage(message);
+        TextComponent discordText = new TextComponent(ChatColor.BLUE + "Discord: ");
+        TextComponent discordLinkText = new TextComponent("Click here");
+        discordLinkText.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, discordLink));
+        discordText.addExtra(discordLinkText);
+        message.addExtra(discordText);
+        message.addExtra("\n");
+
+        TextComponent planetMinecraftText = new TextComponent(ChatColor.BLUE + "Planet Minecraft: ");
+        TextComponent planetMinecraftLinkText = new TextComponent("Click here");
+        planetMinecraftLinkText.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, planetMinecraftLink));
+        planetMinecraftText.addExtra(planetMinecraftLinkText);
+        message.addExtra(planetMinecraftText);
+        message.addExtra("\n");
+
+        TextComponent minecraftServersText = new TextComponent(ChatColor.BLUE + "Minecraft Servers: ");
+        TextComponent minecraftServersLinkText = new TextComponent("Click here");
+        minecraftServersLinkText.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, minecraftServersLink));
+        minecraftServersText.addExtra(minecraftServersLinkText);
+        message.addExtra(minecraftServersText);
+
+        Bukkit.spigot().broadcast(message);
     }
 
-    private String createClickableLink(String text, String link) {
-        return "[{\"text\":\"" + text + "\",\"clickEvent\":{\"action\":\"open_url\",\"value\":\"" + link + "\"}}]";
-    }
+    @EventHandler
+    public void playerInvunerable(PlayerJoinEvent event) {
+        Player player = event.getPlayer();
 
+        // Make the player invulnerable for 2 seconds
+        player.setInvulnerable(true);
+        getServer().getScheduler().runTaskLater(this, () -> player.setInvulnerable(false), 60);
+    }
 
     public ICombatLogX getAPI() {
         PluginManager pluginManager = Bukkit.getPluginManager();
