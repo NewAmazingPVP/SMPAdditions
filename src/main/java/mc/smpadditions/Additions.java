@@ -7,14 +7,17 @@ import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
-import org.bukkit.command.CommandSender;
+import org.bukkit.block.ShulkerBox;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.inventory.CraftItemEvent;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.plugin.Plugin;
@@ -23,13 +26,10 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import com.github.sirblobman.combatlogx.api.ICombatLogX;
 import com.github.sirblobman.combatlogx.api.manager.IDeathManager;
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
-import org.bukkit.event.Listener;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.block.EnderChest;
+import org.bukkit.event.inventory.InventoryMoveItemEvent;
+
 
 import java.util.*;
 
@@ -140,6 +140,44 @@ public class Additions extends JavaPlugin implements Listener {
             }
         }
     }
+
+    @EventHandler
+    public void spawnBlockBreak(BlockBreakEvent event) {
+        if (isWithinSpawnRadius(event.getBlock().getLocation())) {
+            event.setCancelled(true);
+            event.getPlayer().sendMessage(ChatColor.RED + "You cannot break blocks within the spawn area. Go around 50 blocks away to be able to break");
+        }
+    }
+
+    @EventHandler
+    public void onInventoryClick(InventoryClickEvent event) {
+        if (!(event.getWhoClicked() instanceof Player)) {
+            return;
+        }
+
+        Inventory clickedInventory = event.getClickedInventory();
+        if (clickedInventory == null) {
+            return;
+        }
+
+        Inventory topInventory = event.getView().getTopInventory();
+        if (topInventory instanceof ShulkerBox || topInventory instanceof EnderChest) {
+            if (event.getCurrentItem() != null && event.getCurrentItem().getType() == Material.DRAGON_EGG) {
+                event.setCancelled(true);
+            }
+        }
+    }
+
+    @EventHandler
+    public void onInventoryMoveItem(InventoryMoveItemEvent event) {
+        Inventory destination = event.getDestination();
+        if (destination instanceof ShulkerBox || destination instanceof EnderChest) {
+            if (event.getItem() != null && event.getItem().getType() == Material.DRAGON_EGG) {
+                event.setCancelled(true);
+            }
+        }
+    }
+
 
     private boolean isWithinSpawnRadius(Location location) {
         Location spawnLocation = location.getWorld().getSpawnLocation();
