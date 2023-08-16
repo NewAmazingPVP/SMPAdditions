@@ -13,6 +13,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -146,6 +147,14 @@ public class Additions extends JavaPlugin implements Listener {
         if (isWithinSpawnRadius(event.getBlock().getLocation())) {
             event.setCancelled(true);
             event.getPlayer().sendMessage(ChatColor.RED + "You cannot break blocks within the spawn area. Go around 50 blocks away to be able to break");
+        }
+    }
+
+    @EventHandler
+    public void spawnBlockPlace(BlockPlaceEvent event) {
+        if (isWithinSpawnRadius(event.getBlock().getLocation())) {
+            event.setCancelled(true);
+            event.getPlayer().sendMessage(ChatColor.RED + "You cannot place blocks within the spawn area. Go around 50 blocks away to be able to place");
         }
     }
 
