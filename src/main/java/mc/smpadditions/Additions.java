@@ -2,11 +2,7 @@ package mc.smpadditions;
 
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.TextComponent;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
+import org.bukkit.*;
 import org.bukkit.block.ShulkerBox;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -142,7 +138,7 @@ public class Additions extends JavaPlugin implements Listener {
         }
     }
 
-    @EventHandler
+   @EventHandler
     public void spawnBlockBreak(BlockBreakEvent event) {
         if (isWithinSpawnRadius(event.getBlock().getLocation())) {
             event.setCancelled(true);
@@ -158,38 +154,13 @@ public class Additions extends JavaPlugin implements Listener {
         }
     }
 
-    @EventHandler
-    public void onInventoryClick(InventoryClickEvent event) {
-        if (!(event.getWhoClicked() instanceof Player)) {
-            return;
-        }
-
-        Inventory clickedInventory = event.getClickedInventory();
-        if (clickedInventory == null) {
-            return;
-        }
-
-        Inventory topInventory = event.getView().getTopInventory();
-        if (topInventory instanceof ShulkerBox || topInventory instanceof EnderChest) {
-            if (event.getCurrentItem() != null && event.getCurrentItem().getType() == Material.DRAGON_EGG) {
-                event.setCancelled(true);
-            }
-        }
-    }
-
-    @EventHandler
-    public void onInventoryMoveItem(InventoryMoveItemEvent event) {
-        Inventory destination = event.getDestination();
-        if (destination instanceof ShulkerBox || destination instanceof EnderChest) {
-            if (event.getItem() != null && event.getItem().getType() == Material.DRAGON_EGG) {
-                event.setCancelled(true);
-            }
-        }
-    }
-
 
     private boolean isWithinSpawnRadius(Location location) {
         Location spawnLocation = location.getWorld().getSpawnLocation();
+        World.Environment spawnEnvironment = location.getWorld().getEnvironment();
+        if(spawnEnvironment != World.Environment.NORMAL){
+            return false;
+        }
         return location.distanceSquared(spawnLocation) <= spawnRadius * spawnRadius;
     }
 
